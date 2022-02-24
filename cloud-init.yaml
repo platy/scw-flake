@@ -1,0 +1,16 @@
+#cloud-config
+write_files:
+- path: /etc/nixos/flake.nix
+  permissions: '0644'
+  content: |
+    {pkgs, ...}:
+    {
+      nix = {
+        package = pkgs.nixFlakes;
+        extraOptions = ''
+          experimental-features = nix-command flakes
+        '';
+      };
+    }
+runcmd:
+  - ["bash", "-c", "curl https://raw.githubusercontent.com/elitak/nixos-infect/master/nixos-infect | NIXOS_IMPORT=./flake.nix NIX_CHANNEL=nixos-21.11 bash 2>&1 | tee /tmp/infect.log"]
