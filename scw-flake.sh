@@ -2,6 +2,8 @@
 set -e
 
 instance_create() {
+    set -e
+    
     NAME=$1
 
     if [ -z ${NAME} ]; then
@@ -14,6 +16,8 @@ instance_create() {
 }
 
 instance_id() {
+    set -e
+
     NAME=$1
 
     if [ -z ${NAME} ]; then
@@ -26,10 +30,14 @@ instance_id() {
 }
 
 instance_list() {
+    set -e
+    
     scw instance server list tags.0=scw-flake
 }
 
 instance_ip() {
+    set -e
+    
     NAME=$1
 
     ID=$(instance_id $NAME)
@@ -38,6 +46,8 @@ instance_ip() {
 }
 
 instance_ssh() {
+    set -e
+
     NAME=$1
 
     IP=$(instance_ip $NAME)
@@ -47,6 +57,8 @@ instance_ssh() {
 }
 
 instance_terminate() {
+    set -e
+    
     NAME=$1
 
     if [ -z ${NAME} ]; then
@@ -61,12 +73,16 @@ instance_terminate() {
 }
 
 ids_from_name() {
+    set -e
+    
     NAME=$1
 
     scw instance server list name=$NAME tags.0=scw-flake | tail -n+2 | awk '{print $1}'
 }
 
 exactly_one_match() {
+    set -e
+    
     if [ -z $1 ]; then
         echo "No match found"
         exit 1

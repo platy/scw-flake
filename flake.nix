@@ -43,8 +43,7 @@
             buildPhase =
               ''
                 echo '#!${pkgs.bash}/bin/bash
-                  unset PATH
-                  PATH=${pkgs.scaleway-cli}/bin
+                  PATH=$PATH:${pkgs.scaleway-cli}/bin
                   ' | cat - scw-flake.sh > scw-flake.pathed.sh
                 chmod +x scw-flake.pathed.sh;
               '';
