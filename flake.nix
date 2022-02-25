@@ -20,35 +20,41 @@
       forAllSystems = nixpkgs.lib.genAttrs supportedSystems;
 
       # Nixpkgs instantiated for supported system types.
-      nixpkgsFor = forAllSystems (system: import nixpkgs { inherit system; overlays = [ self.overlay ]; });
+      nixpkgsFor = forAllSystems (system: import nixpkgs { inherit system; });
 
     in
 
     {
 
-      # A Nixpkgs overlay.
-      overlay = final: prev: {
-
-        scw-flake = with final; stdenv.mkDerivation rec {
-          name = "scw-flake-${version}";
-
-          src = ./.;
-
-          installPhase =
-            ''
-              mkdir -p $out/bin
-              cp scw-flake.sh $out/bin/
-            '';
-        };
-
-        scaleway-cli = nixpkgs.scaleway-cli;
-      };
-
       # Provide some binary packages for selected system types.
       packages = forAllSystems (system:
+        let
+          pkgs = nixpkgsFor.${system};
+        in
         {
-          inherit (nixpkgsFor.${system}) scaleway-cli;
-          inherit (nixpkgsFor.${system}) scw-flake;
+          inherit (pkgs) scaleway-cli;
+          scw-flake = pkgs.stdenv.mkDerivation rec {
+            name = "scw-flake-${version}";
+
+            src = ./.;
+
+            buildInputs = [pkgs.bash pkgs.scaleway-cli];
+
+            buildPhase =
+              ''
+                echo '#!${pkgs.bash}/bin/bash
+                  unset PATH
+                  PATH=${pkgs.scaleway-cli}/bin
+                  ' | cat - scw-flake.sh > scw-flake.pathed.sh
+                chmod +x scw-flake.pathed.sh;
+              '';
+
+            installPhase =
+              ''
+                mkdir -p $out/bin
+                cp scw-flake.pathed.sh $out/bin/scw-flake.sh
+              '';
+          };
         });
 
       # The default package for 'nix build'. This makes sense if the
